@@ -9,7 +9,9 @@ import android.util.Log;
 import android.view.MotionEvent;
 import android.view.View;
 import android.widget.Button;
+import android.widget.EditText;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.braintreepayments.api.dropin.DropInRequest;
 import com.google.gson.Gson;
@@ -34,12 +36,13 @@ public class MainActivity extends AppCompatActivity {
     public RecyclerView.Adapter mAdapter;
     public RecyclerView.LayoutManager mLayoutManager;
 Button checkout;
+EditText price;
     ProgressDialog progressDialog;
 int REQUEST_CODE=200;
     DiscountInfo discountInfo;
     DiscountInfo allDiscounts;
-    public static String getclienttoken = "dev.local:3900/client_token";
-
+    public static String getclienttoken = "http://dev.local:3900/client_token";
+    String value;
 
     private final OkHttpClient client = new OkHttpClient();
 
@@ -48,6 +51,7 @@ int REQUEST_CODE=200;
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+        price=findViewById(R.id.editTextPrice);
         mRecyclerView = findViewById(R.id.my_recycler_view);
         mRecyclerView.setHasFixedSize(true);
         mLayoutManager = new LinearLayoutManager(this);
@@ -56,7 +60,35 @@ int REQUEST_CODE=200;
         progressDialog = new ProgressDialog(MainActivity.this);
         progressDialog.setProgressStyle(ProgressDialog.STYLE_SPINNER);
         progressDialog.setTitle("Loading discounts!");
-        loadAllDiscounts();
+
+
+        checkout.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                if(price.getText().toString().isEmpty()){
+                    Toast.makeText(MainActivity.this, "Price cannot be empty", Toast.LENGTH_SHORT).show();
+                }
+                else {
+                    value=price.getText().toString();
+                    Request request = new Request.Builder().url(getclienttoken).build();
+                    client.newCall(request).enqueue(new Callback(){
+
+                        @Override
+                        public void onFailure(Call call, IOException e) {
+                            Log.d("error",call.toString());
+
+                        }
+
+                        @Override
+                        public void onResponse(Call call, Response response) throws IOException {
+                            Log.d("token",response.body().string());
+
+                        }
+                    });
+                }
+                }
+        });
+//        loadAllDiscounts();
 
         /*mRecyclerView.addOnItemTouchListener(new RecyclerView.OnItemTouchListener() {
             @Override
