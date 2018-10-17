@@ -1,6 +1,9 @@
 package com.example.mobilepayment;
 
+import android.app.Activity;
 import android.app.ProgressDialog;
+import android.content.Intent;
+import android.support.annotation.Nullable;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.v7.widget.LinearLayoutManager;
@@ -13,8 +16,14 @@ import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.braintreepayments.api.dropin.DropInActivity;
 import com.braintreepayments.api.dropin.DropInRequest;
+import com.braintreepayments.api.dropin.DropInResult;
+import com.braintreepayments.api.models.PaymentMethodNonce;
 import com.google.gson.Gson;
+
+import org.json.JSONException;
+import org.json.JSONObject;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -27,8 +36,10 @@ import java.io.Writer;
 
 import okhttp3.Call;
 import okhttp3.Callback;
+import okhttp3.FormBody;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
+import okhttp3.RequestBody;
 import okhttp3.Response;
 
 public class MainActivity extends AppCompatActivity {
@@ -37,14 +48,18 @@ public class MainActivity extends AppCompatActivity {
     public RecyclerView.LayoutManager mLayoutManager;
 Button checkout;
 EditText price;
+    String token;
     ProgressDialog progressDialog;
 int REQUEST_CODE=200;
     DiscountInfo discountInfo;
     DiscountInfo allDiscounts;
-    public static String getclienttoken = "http://dev.local:3900/client_token";
+    public static String getclienttoken = "http://35.175.148.30:3900/client_token";
+
+    public static String savetransaction = "http://35.175.148.30:3900/checkout";
     String value;
 
     private final OkHttpClient client = new OkHttpClient();
+
 
 
     @Override
@@ -81,13 +96,38 @@ int REQUEST_CODE=200;
 
                         @Override
                         public void onResponse(Call call, Response response) throws IOException {
-                            Log.d("token",response.body().string());
+                          String tokenresponse=response.body().string();
+                            try {
+                                JSONObject jsonObject=new JSONObject(tokenresponse);
+
+
+                                token=jsonObject.get("token").toString();
+                                  Log.d("token",tokenresponse);
+
+                            } catch (JSONException e) {
+                                e.printStackTrace();
+                            }
+
 
                         }
                     });
+
+                    DropInRequest dropInRequest = new DropInRequest()
+                            .clientToken(token);
+                    startActivityForResult(dropInRequest.getIntent(MainActivity.this), REQUEST_CODE);
+
+                    //  onBraintreeSubmit(View.getR,token);
+                 //   Toast.makeText(MainActivity.this, token, Toast.LENGTH_SHORT).show();
+
                 }
                 }
         });
+
+
+
+
+
+
 //        loadAllDiscounts();
 
         /*mRecyclerView.addOnItemTouchListener(new RecyclerView.OnItemTouchListener() {
@@ -127,6 +167,51 @@ int REQUEST_CODE=200;
             }
         });*/
     //    mRecyclerView.addOnItemTouchListener(n);
+
+    }
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
+        if (requestCode == REQUEST_CODE) {
+            if (resultCode == Activity.RESULT_OK) {
+                DropInResult result = data.getParcelableExtra(DropInResult.EXTRA_DROP_IN_RESULT);
+
+
+                String nonce = result.getPaymentMethodNonce().getNonce();
+
+                RequestBody formBody = new FormBody.Builder()
+                        .add("payment_method_nonce",nonce)
+                        .add("amount",value)
+                        .build();
+                Request request = new Request.Builder().url(savetransaction).post(formBody).build();
+                client.newCall(request).enqueue(new Callback(){
+
+                                                    @Override
+                                                    public void onFailure(Call call, IOException e) {
+
+                                                    }
+
+                                                    @Override
+                                                    public void onResponse(Call call, Response response) throws IOException {
+                                                        if(response.isSuccessful() && response.body() !=null){
+                                                            Toast.makeText(MainActivity.this, "successful", Toast.LENGTH_SHORT).show();
+                                                            try {
+                                                                Log.d("checkout",response.body().string());
+                                                        //        System.out.println(response.body().string());
+                                                            } catch (IOException e) {
+                                                                e.printStackTrace();
+                                                            }
+                                                        }
+                                                    }
+                                                });
+
+                // use the result to update your UI and send the payment method nonce to your server
+            } else if (resultCode == Activity.RESULT_CANCELED) {
+                // the user canceled
+            } else {
+                // handle errors here, an exception may be available in
+                Exception error = (Exception) data.getSerializableExtra(DropInActivity.EXTRA_ERROR);
+            }
+        }
 
     }
 

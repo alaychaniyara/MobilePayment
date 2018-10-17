@@ -28,4 +28,21 @@ router.get("/client_token", function (req, res) {
         res.send({"token":response.clientToken});
     });
 });
+
+router.post("/checkout", function (req, res) {
+    var nonceFromTheClient = req.body.payment_method_nonce;
+    var amountvalue=req.body.amount;
+    // Use payment method nonce here
+    gateway.transaction.sale({
+        amount: amountvalue,
+        paymentMethodNonce: nonceFromTheClient,
+        options: {
+            submitForSettlement: true
+        }
+    }, function (err, result) {
+        res.send({"error":"UnAuthorised Access Or Transaction"});
+    });
+});
+
+
 module.exports = router;
