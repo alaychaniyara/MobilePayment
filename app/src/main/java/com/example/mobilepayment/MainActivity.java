@@ -176,8 +176,8 @@ int REQUEST_CODE=200;
                 DropInResult result = data.getParcelableExtra(DropInResult.EXTRA_DROP_IN_RESULT);
 
 
-                String nonce = result.getPaymentMethodNonce().getNonce();
-
+                PaymentMethodNonce pnonce = result.getPaymentMethodNonce();
+            String nonce=pnonce.toString();
                 RequestBody formBody = new FormBody.Builder()
                         .add("payment_method_nonce",nonce)
                         .add("amount",value)
@@ -193,7 +193,7 @@ int REQUEST_CODE=200;
                                                     @Override
                                                     public void onResponse(Call call, Response response) throws IOException {
                                                         if(response.isSuccessful() && response.body() !=null){
-                                                            Toast.makeText(MainActivity.this, "successful", Toast.LENGTH_SHORT).show();
+                                                      //      Toast.makeText(MainActivity.this, "successful", Toast.LENGTH_SHORT).show();
                                                             try {
                                                                 Log.d("checkout",response.body().string());
                                                         //        System.out.println(response.body().string());

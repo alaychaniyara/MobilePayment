@@ -40,7 +40,18 @@ router.post("/checkout", function (req, res) {
             submitForSettlement: true
         }
     }, function (err, result) {
-        res.send({"error":"UnAuthorised Access Or Transaction"});
+
+        if(err)
+        {
+            res.send({"error":"UnAuthorised Access Or Transaction"});
+
+        }
+        else if(result)
+        {
+            res.send({"Success":"Successfull Transaction Wait for Settlement"});
+
+
+        }
     });
 });
 
