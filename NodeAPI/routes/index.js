@@ -37,7 +37,7 @@ router.post("/checkout", function (req, res) {
         amount: amountvalue,
         paymentMethodNonce: nonceFromTheClient,
         options: {
-            submitForSettlement: true
+            submitForSettlement: true,
             storeInVaultOnSuccess: true
         }
     }, function (err, result) {
