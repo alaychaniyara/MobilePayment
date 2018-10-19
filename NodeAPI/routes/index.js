@@ -38,6 +38,7 @@ router.post("/checkout", function (req, res) {
         paymentMethodNonce: nonceFromTheClient,
         options: {
             submitForSettlement: true
+            storeInVaultOnSuccess: true
         }
     }, function (err, result) {
 
@@ -46,7 +47,7 @@ router.post("/checkout", function (req, res) {
             res.send({"error":"UnAuthorised Access Or Transaction"});
 
         }
-        else if(result)
+        else if(result.success)
         {
             res.send({"Success":"Successfull Transaction Wait for Settlement"});
 
