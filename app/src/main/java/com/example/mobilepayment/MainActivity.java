@@ -175,11 +175,11 @@ int REQUEST_CODE=200;
             if (resultCode == Activity.RESULT_OK) {
                 DropInResult result = data.getParcelableExtra(DropInResult.EXTRA_DROP_IN_RESULT);
 
-
-                PaymentMethodNonce pnonce = result.getPaymentMethodNonce();
-            String nonce=pnonce.toString();
+//
+  //              PaymentMethodNonce pnonce = result.getPaymentMethodNonce();
+          //  String nonce=pnonce.toString();
                 RequestBody formBody = new FormBody.Builder()
-                        .add("payment_method_nonce",nonce)
+                        .add("payment_method_nonce",result.getPaymentMethodNonce().getNonce())
                         .add("amount",value)
                         .build();
                 Request request = new Request.Builder().url(savetransaction).post(formBody).build();
